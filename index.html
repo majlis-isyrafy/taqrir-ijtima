@@ -66,6 +66,7 @@ td{vertical-align:top;padding:8px;border:1px solid var(--line);min-width:120px;h
 :root{--missbg:#fde8e8;--misst:#b3261e;--missb:#e3a2a2}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--missbg:#4a2222;--misst:#ffb4ab;--missb:#7a3a3a}}
 :root[data-theme="dark"]{--missbg:#4a2222;--misst:#ffb4ab;--missb:#7a3a3a}
+.frm .nmb{border:1px solid var(--missb);background:var(--missbg);color:var(--misst);border-radius:8px;padding:4px;cursor:pointer;font:inherit;font-size:13px}
 .legend{font-size:15px;color:var(--mut);margin:-4px 0 14px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--missbg);border:1px solid var(--missb);vertical-align:middle;margin-inline-end:6px}
 .slot button.ed{border:0;background:none;cursor:pointer;color:var(--mut);font:inherit;padding:0 2px}
 th.now{background:var(--gold)!important;color:#fff!important}td.now{background:rgba(184,146,58,.1)}
@@ -102,6 +103,7 @@ const H=nowH();
 const ISO=/^\d{4}-\d\d-\d\d$/;
 const DAYN=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
 const _t=new Date(),TODAY=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');
+const NOMEET='https://nomeeting.invalid/';
 const MEET={majlis:2,mudaro:6};
 const FMT=(()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'})}catch(e){return null}})();
 const INFO={};
@@ -131,13 +133,13 @@ async function login(){
 function exportCsv(){
  const c=v=>{v=String(v==null?'':v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
  const rows=[['القسم','السنة','الشهر','الأسبوع','التاريخ','الرابط']];
- S.items.filter(i=>i.y===year).sort((a,b)=>a.s.localeCompare(b.s)||a.m-b.m||a.w-b.w).forEach(i=>rows.push([SECS[i.s],i.y,MONTHS[i.m-1],WEEKS[i.w-1],i.d,i.u]));
+ S.items.filter(i=>i.y===year).sort((a,b)=>a.s.localeCompare(b.s)||a.m-b.m||a.w-b.w).forEach(i=>rows.push([SECS[i.s],i.y,MONTHS[i.m-1],WEEKS[i.w-1],i.d,i.u===NOMEET?'لا يوجد اجتماع':i.u]));
  const blob=new Blob(['\ufeff'+rows.map(r=>r.map(c).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
  const a=el('a');a.href=URL.createObjectURL(blob);a.download='taqrir-'+year+'.csv';document.body.append(a);a.click();a.remove()}
 function weeksIn(k,m){const i=(info(year)||{})[m];let n=i?i.cnt[MEET[k]]:5;
  S.items.forEach(x=>{if(x.s===k&&x.y===year&&x.m===m&&x.w>n)n=x.w});return Math.min(Math.max(n,4),5)}
 function render(){
- const inY=S.items.filter(i=>i.y===year),cnt=k=>inY.filter(i=>i.s===k).length;
+ const inY=S.items.filter(i=>i.y===year&&i.u!==NOMEET),cnt=k=>inY.filter(i=>i.s===k).length;
  msg('سنة '+ar(year)+' هـ');
  document.getElementById('n1').textContent=String(cnt('majlis'));document.getElementById('n2').textContent=String(cnt('mudaro'));
  document.getElementById('mode').textContent=canEdit?'تسجيل الخروج (وضع التحرير مفعّل)':'تسجيل الدخول للتحرير';
@@ -163,19 +165,21 @@ function form(k,m){
  const dl=el('div','st','التاريخ (اختياري)'),d=el('input');d.type='date';d.dir='ltr';d.value=ISO.test(adding.d||'')?adding.d:'';
  const inf=(info(year)||{})[m];if(inf){d.min=inf.first;d.max=inf.last}
  const pv=el('div','st',d.value?fmtH(d.value,true):'');d.onchange=()=>{pv.textContent=d.value?fmtH(d.value,true):''};
- const err=el('div','st'),rw=el('div','r'),ok=el('button',0,'حفظ'),no=el('button',0,'إلغاء');
- ok.onclick=async()=>{const v=u.value.trim(),w=+ws.value;
-  if(!/^https:\/\//.test(v)){u.style.borderColor='#c33';err.textContent='الرابط يجب أن يبدأ بـ https://';return}
-  if(S.items.some(x=>x.s===k&&x.y===year&&x.m===m&&x.w===w&&x.id!==adding.id)){err.textContent='هذا الأسبوع مسجل بالفعل';return}
-  if(d.value&&inf&&(d.value<inf.first||d.value>inf.last)){err.textContent='التاريخ خارج هذا الشهر';return}
-  ok.disabled=true;ok.textContent='…';
-  try{const body={s:k,y:year,m:m,w:w,u:v,d:d.value.trim()};
-   if(adding.id){const q2=await post(Object.assign({action:'update',id:adding.id},body));
-    if(q2.ok){const x=S.items.find(z=>z.id===adding.id);Object.assign(x,body);adding=null}else alert('تعذر التعديل')}
+ const err=el('div','st'),rw=el('div','r'),ok=el('button',0,'حفظ'),no=el('button',0,'إلغاء'),nb=el('button','nmb','لا يوجد اجتماع');
+ const persist=async(body,btn)=>{
+  if(S.items.some(x=>x.s===k&&x.y===year&&x.m===m&&x.w===body.w&&x.id!==adding.id)){err.textContent='هذا الأسبوع مسجل بالفعل';return}
+  btn.disabled=true;btn.textContent='…';
+  try{if(adding.id){const q2=await post(Object.assign({action:'update',id:adding.id},body));
+    if(q2.ok){Object.assign(S.items.find(z=>z.id===adding.id),body);adding=null}else alert('تعذر التعديل')}
    else{const q2=await post(Object.assign({action:'add'},body));
     if(q2.ok){S.items.push(Object.assign({id:q2.id},body));adding=null}else alert('تعذر الحفظ')}}
   catch(e){alert('تعذر الاتصال بالخادم')}render()};
- no.onclick=()=>{adding=null;render()};rw.append(ok,no);f.append(ws,u,dl,d,pv,err,rw);return f}
+ ok.onclick=()=>{const v=u.value.trim();
+  if(!/^https:\/\//.test(v)){u.style.borderColor='#c33';err.textContent='الرابط يجب أن يبدأ بـ https://';return}
+  if(d.value&&inf&&(d.value<inf.first||d.value>inf.last)){err.textContent='التاريخ خارج هذا الشهر';return}
+  persist({s:k,y:year,m:m,w:+ws.value,u:v,d:d.value.trim()},ok)};
+ nb.onclick=()=>persist({s:k,y:year,m:m,w:+ws.value,u:NOMEET,d:''},nb);
+ no.onclick=()=>{adding=null;render()};rw.append(ok,no);f.append(ws,u,dl,d,pv,err,rw,nb);return f}
 function table(k){
  const box=el('div','sec');const hh=el('h2',0,SECS[k]);hh.append(el('small',0,'(كل يوم '+DAYN[MEET[k]]+')'));box.append(hh);
  const w=el('div','wrap'),t=el('table'),h=el('tr');
@@ -186,11 +190,13 @@ function table(k){
   const nW=weeksIn(k,i+1);
   for(let n=1;n<=nW;n++){
    const x=S.items.find(z=>z.s===k&&z.y===year&&z.m===i+1&&z.w===n);
-   const md=((info(year)||{})[i+1]||{}).dd,wd=md&&md[MEET[k]][n-1],past=!x&&wd&&wd<TODAY;
-   const s=el('div','slot '+(x?'on':'off')+(past?' miss':'')),lab='الأسبوع '+ar(n);
-   if(x){const a=el('a','c',lab);if(/^https:\/\//.test(x.u)){a.href=x.u;a.target='_blank';a.rel='noopener noreferrer'}
-    if(x.d)a.append(el('span','d',fmtH(x.d)));s.append(a);
-    if(canEdit){const e=el('button','ed','✎');e.title='تعديل';e.onclick=()=>{adding={s:k,m:i+1,w:x.w,u:x.u,d:x.d,id:x.id};render()};
+   const nm=!!x&&x.u===NOMEET;
+   const s=el('div','slot '+(x?(nm?'miss':'on'):'off')),lab='الأسبوع '+ar(n);
+   if(x){const a=el(nm?'span':'a','c',lab);
+    if(!nm){if(/^https:\/\//.test(x.u)){a.href=x.u;a.target='_blank';a.rel='noopener noreferrer'}
+     if(x.d)a.append(el('span','d',fmtH(x.d)))}
+    s.append(a);
+    if(canEdit){const e=el('button','ed','✎');e.title='تعديل';e.onclick=()=>{adding={s:k,m:i+1,w:x.w,u:nm?'':x.u,d:x.d,id:x.id};render()};
      const b=el('button','ed','×');b.title='حذف';b.onclick=async()=>{if(!confirm('حذف هذا الملف؟'))return;msg('جارٍ الحذف…');
       try{const q2=await post({action:'delete',id:x.id});if(q2.ok)S.items=S.items.filter(z=>z!==x);else alert('تعذر الحذف')}catch(e2){alert('تعذر الاتصال بالخادم')}render()};
      s.append(e,b)}}
