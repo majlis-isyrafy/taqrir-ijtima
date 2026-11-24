@@ -96,7 +96,7 @@ function nowH(){try{const p=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{
 const H=nowH();
 const ISO=/^\d{4}-\d\d-\d\d$/;
 const DAYN=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-const MEET={majlis:6,mudaro:6};
+const MEET={majlis:2,mudaro:6};
 const FMT=(()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'})}catch(e){return null}})();
 const INFO={};
 function info(y){if(INFO[y])return INFO[y];const res={};INFO[y]=res;if(!FMT)return res;
