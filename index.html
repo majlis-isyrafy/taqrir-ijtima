@@ -76,7 +76,7 @@ td{height:auto}body{font-size:17px}.slot{font-size:14px}.slot .d{font-size:13px}
 <div class="navi">لوحة المتابعة</div>
 <div class="lbl">التقارير حسب القسم</div>
 <button class="s" data-s="majlis">تقرير اجتماع المجلس الإشرافي <span class="n" id="n1">٠</span></button>
-<button class="s" data-s="mudaro">تقرير اجتماع المدراء المشاريع <span class="n" id="n2">٠</span></button>
+<button class="s" data-s="mudaro">تقرير اجتماع مدراء المشاريع <span class="n" id="n2">٠</span></button>
 <button class="mode" id="mode">تسجيل الدخول للتحرير</button>
 </aside>
 <main>
@@ -88,14 +88,14 @@ td{height:auto}body{font-size:17px}.slot{font-size:14px}.slot .d{font-size:13px}
 const API='https://script.google.com/macros/s/AKfycby_PZpeTMRe3Qrw-DUkygtfLMFPHrN_Kqyg-fBIMCw5l2WUEmIn_m-881-IOTD3QGiL/exec';
 const MONTHS=['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
 const WEEKS=['الأسبوع الأول','الأسبوع الثاني','الأسبوع الثالث','الأسبوع الرابع','الأسبوع الخامس'];
-const SECS={majlis:'تقرير اجتماع المجلس الإشرافي',mudaro:'تقرير اجتماع المدراء المشاريع'};
+const SECS={majlis:'تقرير اجتماع المجلس الإشرافي',mudaro:'تقرير اجتماع مدراء المشاريع'};
 const ar=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
 const norm=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[أإآ]/g,'ا').toLowerCase();
 function nowH(){try{const p=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{year:'numeric',month:'numeric'}).formatToParts(new Date());
  const g=t=>+(p.find(x=>x.type===t)||{}).value;const y=g('year')||g('relatedYear'),m=g('month');return(y&&m)?{y,m}:{y:1448,m:0}}catch(e){return{y:1448,m:0}}}
 const H=nowH();
 const ISO=/^\d{4}-\d\d-\d\d$/;
-const DAYN=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const DAYN=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
 const MEET={majlis:2,mudaro:6};
 const FMT=(()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'})}catch(e){return null}})();
 const INFO={};
@@ -136,11 +136,11 @@ function render(){
  if(state==='loading'){app.append(el('div','msg','جارٍ تحميل البيانات…'));return}
  if(state==='error'){const d=el('div','msg','تعذر تحميل البيانات. ');const b=el('button','pill','إعادة المحاولة');b.onclick=load;d.append(b);app.append(d);return}
  const cards=el('div','cards');
- [['main','إجمالي التقارير هذه السنة',inY.length,'#173d17'],['','اجتماع المجلس الإشرافي',cnt('majlis'),'var(--c1)'],['','اجتماع المدراء المشاريع',cnt('mudaro'),'var(--c2)']].forEach(([k,l,v,c])=>{
+ [['main','إجمالي تقارير هذه السنة',inY.length,'#173d17'],['','اجتماع المجلس الإشرافي',cnt('majlis'),'var(--c1)'],['','اجتماع مدراء المشاريع',cnt('mudaro'),'var(--c2)']].forEach(([k,l,v,c])=>{
   const d=el('div','card '+k);d.style.setProperty('--c',c);d.append(el('b',0,String(v)),el('span',0,l));cards.append(d)});
  app.append(cards);
  const bar=el('div','bar');
- [['all','الكل'],['majlis','المجلس الإشرافي'],['mudaro','المدراء المشاريع']].forEach(([k,l])=>{
+ [['all','الكل'],['majlis','المجلس الإشرافي'],['mudaro','مدراء المشاريع']].forEach(([k,l])=>{
   const b=el('button','pill'+(filter===k?' on':''),l);b.onclick=()=>{filter=k;render()};bar.append(b)});
  const sel=el('select');years().forEach(y=>{const o=el('option',0,'سنة '+ar(y));o.value=y;if(y===year)o.selected=true;sel.append(o)});
  sel.onchange=()=>{year=+sel.value;adding=null;render()};bar.append(sel);
@@ -167,7 +167,7 @@ function form(k,m){
   catch(e){alert('تعذر الاتصال بالخادم')}render()};
  no.onclick=()=>{adding=null;render()};rw.append(ok,no);f.append(ws,u,dl,d,pv,err,rw);return f}
 function table(k){
- const box=el('div','sec');const hh=el('h2',0,SECS[k]);hh.append(el('small',0,'(يُعقد كل يوم '+DAYN[MEET[k]]+')'));box.append(hh);
+ const box=el('div','sec');const hh=el('h2',0,SECS[k]);hh.append(el('small',0,'(كل يوم '+DAYN[MEET[k]]+')'));box.append(hh);
  const w=el('div','wrap'),t=el('table'),h=el('tr');
  MONTHS.forEach((m,i)=>h.append(el('th',(year===H.y&&i+1===H.m)?'now':'',m)));t.append(h);const r=el('tr');
  MONTHS.forEach((m,i)=>{
