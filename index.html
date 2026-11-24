@@ -65,7 +65,7 @@ td{vertical-align:top;padding:8px;border:1px solid var(--line);min-width:120px;h
 .slot button.ed{border:0;background:none;cursor:pointer;color:var(--mut);font:inherit;padding:0 2px}
 th.now{background:var(--gold)!important;color:#fff!important}td.now{background:rgba(184,146,58,.1)}
 .srch{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:999px;width:220px}
-td{height:auto}body{font-size:17px}.slot{font-size:14px}.slot .d{font-size:13px}th{font-size:16px}.frm input,.frm select{font-size:14px}.frm .st{font-size:13px}.sec h2 small{font-size:14px;opacity:.85;font-weight:400;margin-inline-start:10px}
+td{height:auto}.navi,.lbl{text-align:center}body{font-size:17px}.slot{font-size:14px}.slot .d{font-size:13px}th{font-size:16px}.frm input,.frm select{font-size:14px}.frm .st{font-size:13px}.sec h2 small{font-size:14px;opacity:.85;font-weight:400;margin-inline-start:10px}
 @media print{aside,.bar,.mode,.ed,.msg{display:none!important}body{display:block}main{padding:0}.wrap{overflow:visible}table{min-width:0;font-size:9px}td{min-width:0;padding:3px}.slot{font-size:9px}.sec{break-inside:avoid;box-shadow:none}@page{size:A4 landscape;margin:10mm}}
 </style>
 </head>
@@ -105,6 +105,9 @@ function info(y){if(INFO[y])return INFO[y];const res={};INFO[y]=res;if(!FMT)retu
   if(hy!==y)continue;const o=res[hm]||(res[hm]={first:null,last:null,cnt:[0,0,0,0,0,0,0]});const dt=new Date(t),iso=dt.toISOString().slice(0,10);
   if(!o.first)o.first=iso;o.last=iso;o.cnt[dt.getUTCDay()]++}
  return res}
+const MON={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+function normD(v){v=String(v||'');if(ISO.test(v))return v;const m=v.match(/^[A-Za-z]{3} ([A-Za-z]{3}) (\d{1,2}) (\d{4})/);
+ if(m&&MON[m[1]])return m[3]+'-'+String(MON[m[1]]).padStart(2,'0')+'-'+m[2].padStart(2,'0');return v}
 function fmtH(v,full){if(!ISO.test(v))return v;try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',Object.assign({timeZone:'UTC'},full?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'})).format(new Date(v+'T12:00:00Z'))}catch(e){return v}}
 let S={items:[]},PW='',canEdit=false,year=Math.max(1445,H.y),filter='all',adding=null,state='loading',q='';
 const app=document.getElementById('app');
@@ -112,7 +115,7 @@ const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=nu
 const years=()=>{const a=[];for(let y=1445;y<=Math.max(1452,H.y+2,year);y++)a.push(y);return a};
 async function post(o){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({password:PW},o))});return r.json()}
 async function load(){state='loading';render();
- try{const r=await fetch(API);const d=await r.json();S.items=(d.items||[]).map(x=>Object.assign(x,{d:x.d||''}));state='ok'}catch(e){state='error'}render()}
+ try{const r=await fetch(API);const d=await r.json();S.items=(d.items||[]).map(x=>Object.assign(x,{d:normD(x.d)}));state='ok'}catch(e){state='error'}render()}
 const msg=t=>{document.getElementById('sub').textContent=t};
 async function login(){
  if(canEdit){canEdit=false;PW='';try{sessionStorage.removeItem('pw')}catch(e){}adding=null;render();return}
