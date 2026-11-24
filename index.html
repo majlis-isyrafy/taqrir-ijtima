@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>تقرير الاجتماع تحت إشراف المجلس الإشرافي</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap">
 <style>
 :root{--bg:#f5efe3;--card:#fffdf7;--ink:#1f3a1f;--mut:#7a7667;--g1:#173d17;--g2:#2f6b26;--gold:#b8923a;--line:#e6dcc6;--c1:#7a4fa0;--c2:#2a7f86;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -12,7 +12,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#121a12;--card:#1b261b;--ink:#e8e2d0;--mut:#a9a48f;--line:#2f3d2f}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo','Segoe UI',Tahoma,sans-serif;display:flex;min-height:100vh}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Amiri','Traditional Arabic','Segoe UI',serif;display:flex;min-height:100vh}
 aside{width:250px;flex:none;background:linear-gradient(160deg,#1c4a1c,#102b10);color:#fff;padding:24px 16px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh}
 aside img{width:130px;display:block;margin:0 auto}
 .brand{text-align:center;font-size:12px;letter-spacing:.5px}
@@ -23,7 +23,7 @@ aside button.s:hover,aside button.s.on{background:rgba(255,255,255,.12)}
 .n{background:rgba(255,255,255,.18);border-radius:50%;min-width:26px;height:26px;display:grid;place-items:center;font-size:12px}
 .mode{margin-top:auto;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:10px;text-align:center;font-size:14px}
 main{flex:1;min-width:0;padding:28px 32px}
-h1{margin:0 0 6px;color:var(--g1);font-size:clamp(30px,4.2vw,50px);font-weight:700;line-height:1.35;padding-bottom:8px;border-bottom:4px solid var(--gold);display:inline-block}
+h1{margin:0 0 6px;color:var(--g1);font-size:clamp(30px,4.2vw,50px);font-weight:700;line-height:1.35;}
 :root[data-theme="dark"] h1{color:#cfe6c4}
 .sub{color:var(--gold);margin:4px 0 22px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
@@ -65,7 +65,7 @@ td{vertical-align:top;padding:8px;border:1px solid var(--line);min-width:120px;h
 .slot button.ed{border:0;background:none;cursor:pointer;color:var(--mut);font:inherit;padding:0 2px}
 th.now{background:var(--gold)!important;color:#fff!important}td.now{background:rgba(184,146,58,.1)}
 .srch{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:999px;width:220px}
-td{height:auto}
+td{height:auto}body{font-size:17px}.slot{font-size:14px}.slot .d{font-size:13px}th{font-size:16px}.frm input,.frm select{font-size:14px}.frm .st{font-size:13px}.sec h2 small{font-size:14px;opacity:.85;font-weight:400;margin-inline-start:10px}
 @media print{aside,.bar,.mode,.ed,.msg{display:none!important}body{display:block}main{padding:0}.wrap{overflow:visible}table{min-width:0;font-size:9px}td{min-width:0;padding:3px}.slot{font-size:9px}.sec{break-inside:avoid;box-shadow:none}@page{size:A4 landscape;margin:10mm}}
 </style>
 </head>
@@ -94,6 +94,18 @@ const norm=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf
 function nowH(){try{const p=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{year:'numeric',month:'numeric'}).formatToParts(new Date());
  const g=t=>+(p.find(x=>x.type===t)||{}).value;const y=g('year')||g('relatedYear'),m=g('month');return(y&&m)?{y,m}:{y:1448,m:0}}catch(e){return{y:1448,m:0}}}
 const H=nowH();
+const ISO=/^\d{4}-\d\d-\d\d$/;
+const DAYN=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const MEET={majlis:6,mudaro:6};
+const FMT=(()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'})}catch(e){return null}})();
+const INFO={};
+function info(y){if(INFO[y])return INFO[y];const res={};INFO[y]=res;if(!FMT)return res;
+ const gy=Math.floor(622.54+(y-1)*0.97022);let t=Date.UTC(gy-1,0,1,12);const end=Date.UTC(gy+2,0,1,12);
+ for(;t<end;t+=864e5){let hy,hm;for(const x of FMT.formatToParts(new Date(t))){if(x.type==='year'||x.type==='relatedYear')hy=+x.value;else if(x.type==='month')hm=+x.value}
+  if(hy!==y)continue;const o=res[hm]||(res[hm]={first:null,last:null,cnt:[0,0,0,0,0,0,0]});const dt=new Date(t),iso=dt.toISOString().slice(0,10);
+  if(!o.first)o.first=iso;o.last=iso;o.cnt[dt.getUTCDay()]++}
+ return res}
+function fmtH(v,full){if(!ISO.test(v))return v;try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',Object.assign({timeZone:'UTC'},full?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'})).format(new Date(v+'T12:00:00Z'))}catch(e){return v}}
 let S={items:[]},PW='',canEdit=false,year=Math.max(1445,H.y),filter='all',adding=null,state='loading',q='';
 const app=document.getElementById('app');
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -107,19 +119,19 @@ async function login(){
  const p=prompt('أدخل كلمة المرور');if(!p)return;PW=p;
  try{const r=await post({action:'check'});if(r.ok){canEdit=true;try{sessionStorage.setItem('pw',p)}catch(e){}}else{PW='';alert('كلمة المرور غير صحيحة')}}
  catch(e){PW='';alert('تعذر الاتصال بالخادم')}render()}
-const hit=x=>!q||norm([MONTHS[x.m-1],WEEKS[x.w-1],x.d,SECS[x.s],x.y].join(' ')).includes(norm(q));
 function exportCsv(){
  const c=v=>{v=String(v==null?'':v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
  const rows=[['القسم','السنة','الشهر','الأسبوع','التاريخ','الرابط']];
  S.items.filter(i=>i.y===year).sort((a,b)=>a.s.localeCompare(b.s)||a.m-b.m||a.w-b.w).forEach(i=>rows.push([SECS[i.s],i.y,MONTHS[i.m-1],WEEKS[i.w-1],i.d,i.u]));
  const blob=new Blob(['\ufeff'+rows.map(r=>r.map(c).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
  const a=el('a');a.href=URL.createObjectURL(blob);a.download='taqrir-'+year+'.csv';document.body.append(a);a.click();a.remove()}
+function weeksIn(k,m){const i=(info(year)||{})[m];let n=i?i.cnt[MEET[k]]:5;
+ S.items.forEach(x=>{if(x.s===k&&x.y===year&&x.m===m&&x.w>n)n=x.w});return Math.min(Math.max(n,4),5)}
 function render(){
  const inY=S.items.filter(i=>i.y===year),cnt=k=>inY.filter(i=>i.s===k).length;
- let sub='سنة '+ar(year)+' هـ';if(q)sub+=' — نتائج البحث: '+ar(inY.filter(hit).length);msg(sub);
+ msg('سنة '+ar(year)+' هـ');
  document.getElementById('n1').textContent=String(cnt('majlis'));document.getElementById('n2').textContent=String(cnt('mudaro'));
  document.getElementById('mode').textContent=canEdit?'تسجيل الخروج (وضع التحرير مفعّل)':'تسجيل الدخول للتحرير';
- const keep=document.activeElement&&document.activeElement.className==='srch';
  app.replaceChildren();
  if(state==='loading'){app.append(el('div','msg','جارٍ تحميل البيانات…'));return}
  if(state==='error'){const d=el('div','msg','تعذر تحميل البيانات. ');const b=el('button','pill','إعادة المحاولة');b.onclick=load;d.append(b);app.append(d);return}
@@ -132,20 +144,20 @@ function render(){
   const b=el('button','pill'+(filter===k?' on':''),l);b.onclick=()=>{filter=k;render()};bar.append(b)});
  const sel=el('select');years().forEach(y=>{const o=el('option',0,'سنة '+ar(y));o.value=y;if(y===year)o.selected=true;sel.append(o)});
  sel.onchange=()=>{year=+sel.value;adding=null;render()};bar.append(sel);
- const si=el('input','srch');si.type='search';si.placeholder='ابحث في هذه السنة…';si.value=q;
- si.oninput=()=>{q=si.value.trim();render()};bar.append(si);
  const pb=el('button','pill','🖨 طباعة');pb.onclick=()=>window.print();
  const eb=el('button','pill','⬇ تصدير CSV');eb.onclick=exportCsv;bar.append(pb,eb);app.append(bar);
- if(keep){si.focus();si.setSelectionRange(si.value.length,si.value.length)}
  Object.keys(SECS).filter(k=>filter==='all'||filter===k).forEach(k=>app.append(table(k)))}
 function form(k,m){
  const f=el('div','frm'),ws=el('select');WEEKS.forEach((n,j)=>{const o=el('option',0,n);o.value=j+1;if(j+1===adding.w)o.selected=true;ws.append(o)});
  const u=el('input');u.placeholder='رابط Google Drive';u.dir='ltr';u.value=adding.u||'';
- const d=el('input');d.placeholder='التاريخ (اختياري)';d.value=adding.d||'';
+ const dl=el('div','st','التاريخ (اختياري)'),d=el('input');d.type='date';d.dir='ltr';d.value=ISO.test(adding.d||'')?adding.d:'';
+ const inf=(info(year)||{})[m];if(inf){d.min=inf.first;d.max=inf.last}
+ const pv=el('div','st',d.value?fmtH(d.value,true):'');d.onchange=()=>{pv.textContent=d.value?fmtH(d.value,true):''};
  const err=el('div','st'),rw=el('div','r'),ok=el('button',0,'حفظ'),no=el('button',0,'إلغاء');
  ok.onclick=async()=>{const v=u.value.trim(),w=+ws.value;
   if(!/^https:\/\//.test(v)){u.style.borderColor='#c33';err.textContent='الرابط يجب أن يبدأ بـ https://';return}
   if(S.items.some(x=>x.s===k&&x.y===year&&x.m===m&&x.w===w&&x.id!==adding.id)){err.textContent='هذا الأسبوع مسجل بالفعل';return}
+  if(d.value&&inf&&(d.value<inf.first||d.value>inf.last)){err.textContent='التاريخ خارج هذا الشهر';return}
   ok.disabled=true;ok.textContent='…';
   try{const body={s:k,y:year,m:m,w:w,u:v,d:d.value.trim()};
    if(adding.id){const q2=await post(Object.assign({action:'update',id:adding.id},body));
@@ -153,20 +165,20 @@ function form(k,m){
    else{const q2=await post(Object.assign({action:'add'},body));
     if(q2.ok){S.items.push(Object.assign({id:q2.id},body));adding=null}else alert('تعذر الحفظ')}}
   catch(e){alert('تعذر الاتصال بالخادم')}render()};
- no.onclick=()=>{adding=null;render()};rw.append(ok,no);f.append(ws,u,d,err,rw);return f}
+ no.onclick=()=>{adding=null;render()};rw.append(ok,no);f.append(ws,u,dl,d,pv,err,rw);return f}
 function table(k){
- const box=el('div','sec');box.append(el('h2',0,SECS[k]));
+ const box=el('div','sec');const hh=el('h2',0,SECS[k]);hh.append(el('small',0,'(يُعقد كل يوم '+DAYN[MEET[k]]+')'));box.append(hh);
  const w=el('div','wrap'),t=el('table'),h=el('tr');
  MONTHS.forEach((m,i)=>h.append(el('th',(year===H.y&&i+1===H.m)?'now':'',m)));t.append(h);const r=el('tr');
  MONTHS.forEach((m,i)=>{
   const td=el('td',(year===H.y&&i+1===H.m)?'now':'');
   if(adding&&adding.s===k&&adding.m===i+1){td.append(form(k,i+1));r.append(td);return}
-  for(let n=1;n<=5;n++){
+  const nW=weeksIn(k,i+1);
+  for(let n=1;n<=nW;n++){
    const x=S.items.find(z=>z.s===k&&z.y===year&&z.m===i+1&&z.w===n);
-   if(q&&!(x&&hit(x)))continue;
    const s=el('div','slot '+(x?'on':'off')),lab='الأسبوع '+ar(n);
    if(x){const a=el('a','c',lab);if(/^https:\/\//.test(x.u)){a.href=x.u;a.target='_blank';a.rel='noopener noreferrer'}
-    if(x.d)a.append(el('span','d',x.d));s.append(a);
+    if(x.d)a.append(el('span','d',fmtH(x.d)));s.append(a);
     if(canEdit){const e=el('button','ed','✎');e.title='تعديل';e.onclick=()=>{adding={s:k,m:i+1,w:x.w,u:x.u,d:x.d,id:x.id};render()};
      const b=el('button','ed','×');b.title='حذف';b.onclick=async()=>{if(!confirm('حذف هذا الملف؟'))return;msg('جارٍ الحذف…');
       try{const q2=await post({action:'delete',id:x.id});if(q2.ok)S.items=S.items.filter(z=>z!==x);else alert('تعذر الحذف')}catch(e2){alert('تعذر الاتصال بالخادم')}render()};
